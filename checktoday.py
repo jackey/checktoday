@@ -34,16 +34,21 @@ def check_server(server):
       helper.notify(name + " (IP: " + ip + ") is down !!!")
       print start, " "* error_space_len, errorend
 
+config = ConfigParser()
+
 if __name__ == "__main__":
    while True:
       # Load config file
-      config = ConfigParser()
       config.read("./config.ini")
+
+      # Get config
+      checktoday_config = dict(config.items("checktoday"))
 
       # Check server one by one
       for section in config.sections():
-       check_server(config.items(section))
+        if section != "checktoday":
+          check_server(config.items(section))
 
       # Redo again after 1min
-      time.sleep(60 * 1) # 1 min
+      time.sleep(checktoday_config["internal"])
 
