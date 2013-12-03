@@ -2,6 +2,7 @@
 
 from ConfigParser import ConfigParser
 import helper
+import time
 
 def check_server(server):
  (t_width, nill) = helper.getTerminalSize()
@@ -33,11 +34,16 @@ def check_server(server):
       helper.notify(name + " (IP: " + ip + ") is down !!!")
       print start, " "* error_space_len, errorend
 
-# Load config file
-config = ConfigParser()
-config.read("./config.ini")
+if __name__ == "__main__":
+   while True:
+      # Load config file
+      config = ConfigParser()
+      config.read("./config.ini")
 
-# Check server one by one
-for section in config.sections():
- check_server(config.items(section))
+      # Check server one by one
+      for section in config.sections():
+       check_server(config.items(section))
+
+      # Redo again after 1min
+      time.sleep(60 * 1) # 1 min
 
