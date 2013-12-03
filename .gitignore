@@ -2,3 +2,4 @@
 helper
 log
 .pid
+ssh_log

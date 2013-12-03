@@ -9,6 +9,8 @@ import time
 def check_server(server):
     (t_width, nill) = helper.getTerminalSize()
     server = dict(server)
+    if server["protocal"] != "http":
+        return;
     name = server['name']
     ip = server['ip']
     port = server['port']
@@ -21,20 +23,19 @@ def check_server(server):
     space_len = t_width - len(start) - len(end)
     error_space_len = t_width - len(start) - len(end)
 
-    if protocal == 'http':
-        import httplib
-        try:
-            conn = httplib.HTTPConnection('%s' % ip, port)
-            conn.request('GET', path)
-            resp = conn.getresponse()
-            if str(resp.status) == '200':
-                print start, ' ' * space_len, end
-            else:
-                helper.notify(name + ' (IP: ' + ip + ') is down !!!')
-                print start, ' ' * error_space_len, errorend
-        except Exception, e:
+    import httplib
+    try:
+        conn = httplib.HTTPConnection('%s' % ip, port)
+        conn.request('GET', path)
+        resp = conn.getresponse()
+        if str(resp.status) == '200':
+            print start, ' ' * space_len, end
+        else:
             helper.notify(name + ' (IP: ' + ip + ') is down !!!')
             print start, ' ' * error_space_len, errorend
+    except Exception, e:
+        helper.notify(name + ' (IP: ' + ip + ') is down !!!')
+        print start, ' ' * error_space_len, errorend
 
 
 config = ConfigParser()
