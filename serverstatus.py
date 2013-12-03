@@ -7,10 +7,12 @@ import sys
 import traceback
 import helper
 from ConfigParser import ConfigParser
+import time
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 
 def check_server_with_ssh(sshhost, sshuser, sshport=21, name=""):
+    global info
     paramiko.util.log_to_file(pwd + "/ssh_log")
 
     try:
@@ -19,8 +21,6 @@ def check_server_with_ssh(sshhost, sshuser, sshport=21, name=""):
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(sshhost, sshport, sshuser)
         chan = client.get_transport().open_session()
-
-        info = ""
 
         # Total memory
         chan.exec_command("""cat /proc/meminfo""")
@@ -42,7 +42,7 @@ def check_server_with_ssh(sshhost, sshuser, sshport=21, name=""):
                         mem_free += int(str(v).replace("kB", "").strip())
                 break
 
-        info += "\nServer: %s \n" % (name)
+        info += "\n<b>Server: %s </b>\n" % (name)
         info += "Memfree: %s \n" %( helper.convertSize(mem_free))
         info += "Memtotal: %s\n" %(helper.convertSize(mem_total))
 
@@ -59,7 +59,6 @@ def check_server_with_ssh(sshhost, sshuser, sshport=21, name=""):
 
         chan.close()
         client.close()
-        helper.info(info)
     except Exception, e:
         print "*** Caught exception : %s %s" % (e.__class__, e)
 
@@ -69,17 +68,18 @@ def check_server_with_ssh(sshhost, sshuser, sshport=21, name=""):
         except:
             pass
 
-    sys.exit(0)
-
-
-
 if __name__ == "__main__":
-    config = ConfigParser()
-    config.read(pwd + "/config.ini")
+    while True:
+        info = ""
+        config = ConfigParser()
+        config.read(pwd + "/config.ini")
+        checktoday_config = dict(config.items('checktoday'))
 
-    for section in config.sections():
-        if section != "checktoday":
-            distance = dict(config.items(section))
-            if distance["protocal"] == "ssh":
-                check_server_with_ssh(distance["ip"], distance["user"], distance["port"], distance["name"])
+        for section in config.sections():
+            if section != "checktoday":
+                distance = dict(config.items(section))
+                if distance["protocal"] == "ssh":
+                    check_server_with_ssh(distance["ip"], distance["user"], distance["port"], distance["name"])
 
+        helper.info(info)
+        time.sleep(float(checktoday_config["internal"]))
